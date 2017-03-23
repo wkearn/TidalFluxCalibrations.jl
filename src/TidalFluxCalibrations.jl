@@ -44,4 +44,14 @@ function calibrateData(dd::Discharge,β::Vector{Float64})
     Discharge(dd.cp,dd.ts,dd.vs,dd.A,X*β)
 end
 
+function calibrateData(cal::CalibrationData,dd::Discharge,k::Int)
+    β = calibratePolynomial(cal,k)
+    calibrateData(dd,β)
+end
+
+function calibrateData(cals::Vector{CalibrationData},dd::Discharge,k::Int)
+    β = calibratePolynomial(cals,k)
+    calibrateData(dd,β)
+end
+
 end # module
