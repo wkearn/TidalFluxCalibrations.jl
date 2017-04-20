@@ -2,7 +2,7 @@ module TidalFluxCalibrations
 
 export calibratePolynomial, calibrateData
 
-using DischargeData, Interpolations
+using DischargeData, Interpolations, DataFrames
 
 """
     interpolateCalibration(c::Calibration)
@@ -67,5 +67,13 @@ function calibrateData{T<:Quantity}(cals::Vector{Calibration{T}},q::T,k::Int)
     β = calibratePolynomial(cals,k)
     calibrateData(q,β)
 end
+
+function calibrationDataFrame{T<:Quantity}(cal::Calibration{T})
+    Qc = quantity(to_quantity(cal))
+    Qs = quantity(interpolateCalibration(cal))
+    DataFrame(T=times(to_quantity(cal)),To=Qc,From=Qs,)
+end
+
+calibrationDataFrame{T<:Quantity}(cals::Vector{Calibration{T}}) = vcat(calibrationDataFrame.(cals)...)
 
 end # module
