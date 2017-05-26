@@ -34,14 +34,14 @@ dc = TFC.interpolateCalibration(cal)
 cals = [cal;cal]
 β2 = calibratePolynomial(cals,1)
 
-@test_approx_eq β1 β2
+@test β1 ≈ β2
 
 dn1 = calibrateData(dn,β1)
 dn2 = calibrateData(cal,dn,1)
 dn3 = calibrateData(cals,dn,1)
 
 @test dn1 == dn2
-@test_approx_eq quantity(dn2) quantity(dn3)
+@test quantity(dn2) ≈ quantity(dn3)
 
 ###################################################
 # Now do it all over again, but with a different
@@ -66,11 +66,11 @@ dc = TFC.interpolateCalibration(cal)
 cals = [cal;cal]
 β2 = calibratePolynomial(cals,1)
 
-@test_approx_eq β1 β2
+@test β1 ≈ β2
 
 dn1 = calibrateData(dn,β1)
 dn2 = calibrateData(cal,dn,1)
 dn3 = calibrateData(cals,dn,1)
 
 @test dn1 == dn2
-@test_approx_eq quantity(dn2) quantity(dn3)
+@test quantity(dn2) ≈ quantity(dn3)
