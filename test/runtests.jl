@@ -3,11 +3,11 @@ using Base.Test
 TFC = TidalFluxCalibrations
 
 # Generate an hourly time series
-tst = DateTime(2016,01,01):Hour(1):DateTime(2016,02,01)
+tst = collect(DateTime(2016,01,01):Hour(1):DateTime(2016,02,01))
 nt = length(tst)
 
 # Generate a high-frequency time series
-tsn = DateTime(2016,01,01):Minute(10):DateTime(2016,02,01)
+tsn = collect(DateTime(2016,01,01):Minute(10):DateTime(2016,02,01))
 nn = length(tsn)
 
 # Create random data
