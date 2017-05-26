@@ -21,20 +21,6 @@ function interpolateCalibration{T}(cal::Calibration{T})
     T(ts,qs)
 end
 
-function interpolateQuantity{T<:Quantity}(ts,Q::T)
-    qi = interpolate((times(Q),),
-                     quantity(Q),
-                     Gridded(Linear())
-                     )
-    qs = qi[ts]
-    T(ts,qs)
-end
-
-function interpolateAuxiliary(cal::Calibration,args...)
-    ts = times(to_quantity(cal))
-    [interpolateQuantity(ts,q) for q in args]
-end
-
 """
 Constructs a polynomial regression of order k to calibrate 
 ADCP discharge to the true discharge
@@ -86,17 +72,6 @@ function calibrationDataFrame{T<:Quantity}(cal::Calibration{T})
     Qc = quantity(to_quantity(cal))
     Qs = quantity(interpolateCalibration(cal))
     DataFrame(T=times(to_quantity(cal)),To=Qc,From=Qs,)
-end
-
-function calibrationDataFrame{T<:Quantity}(cal::Calibration{T},args...)
-    Qc = quantity(to_quantity(cal))
-    Qs = quantity(interpolateCalibration(cal))
-    As = interpolateAuxiliary(cal,args...)
-    D = DataFrame(T=times(to_quantity(cal)),To=Qc,From=Qs,)
-    for i in 1:length(As)
-        D[Symbol("A",i)] = quantity(As[i])
-    end
-    D
 end
 
 calibrationDataFrame{T<:Quantity}(cals::Vector{Calibration{T}}) = vcat(calibrationDataFrame.(cals)...)
