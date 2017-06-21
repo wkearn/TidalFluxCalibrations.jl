@@ -1,6 +1,8 @@
 module TidalFluxCalibrations
 
-using DischargeData, StatsBase, Interpolations
+using Reexport
+
+@reexport using DischargeData, StatsBase, Interpolations
 
 export CalibrationModel,
     PolynomialCalibrationModel
