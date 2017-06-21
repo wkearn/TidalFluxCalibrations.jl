@@ -1,8 +1,19 @@
 module TidalFluxCalibrations
 
-export calibratePolynomial, calibrateData
+using DischargeData, StatsBase, Interpolations
 
-using DischargeData, Interpolations, DataFrames
+export CalibrationModel,
+    PolynomialCalibrationModel
+
+abstract type CalibrationModel{T<:Quantity, F<:Quantity} <: RegressionModel end
+
+struct PolynomialCalibrationModel{T<:Quantity, F<:Quantity} <: CalibrationModel{T,F}
+    k::Int
+    β::Vector{Float64}
+    c::Calibration{T,F}
+end
+
+StatsBase.coef(m::PolynomialCalibrationModel) = m.β
 
 """
     interpolateCalibration(c::Calibration)
@@ -11,7 +22,7 @@ Takes a Calibration and returns the from quantity
 that has been interpolated to the times of the 
 to quantity
 """
-function interpolateCalibration{T}(cal::Calibration{T})
+function interpolatecal{T,F}(cal::Calibration{T,F})
     qi = interpolate((times(from_quantity(cal)),),
                      quantity(from_quantity(cal)),
                      Gridded(Linear())
@@ -22,58 +33,38 @@ function interpolateCalibration{T}(cal::Calibration{T})
 end
 
 """
-Constructs a polynomial regression of order k to calibrate 
-ADCP discharge to the true discharge
+    design_polynomial(Q,k)
+
+Create the design matrix for a polynomial regression
+of highest order k
 """
-function calibratePolynomial(cal::Calibration,k)
-    qs = interpolateCalibration(cal)
-    X = ones(length(qs),k+1)
-    Q = quantity(qs)
+function design_polynomial(Q,k)
+    X = ones(length(Q),k+1)
     for i in 1:k+1
         X[:,i] = Q.^(i-1)
     end
-    X\quantity(to_quantity(cal))
+    X
 end
 
-"""
-Performs a global calibration for multiple Calibrations
-"""
-function calibratePolynomial{T}(cals::Vector{Calibration{T}},k)
-    qs = vcat(quantity.(interpolateCalibration.(cals))...)
-    X = ones(length(qs),k+1)
-    for i in 1:k+1
-        X[:,i] = qs.^(i-1)
-    end
-    qq = vcat(quantity.(to_quantity.(cals))...)
-    X\qq
+function design_polynomial(Q::Quantity,k)
+    design_polynomial(quantity(Q),k)
 end
 
-function calibrateData{T<:Quantity}(q::T,β::Vector{Float64})
-    k = length(β)-1
-    X = zeros(length(q),k+1)
-    Q = quantity(q)
-    for i in 1:k+1
-        X[:,i] = Q.^(i-1)
-    end
-    Discharge(times(q),X*β)
+function design_polynomial(c::Calibration,k)
+    qi = interpolatecal(c)
+    design_polynomial(qi,k)
 end
 
-function calibrateData{T<:Quantity}(cal::Calibration{T},q::T,k::Int)
-    β = calibratePolynomial(cal,k)
-    calibrateData(q,β)
+function StatsBase.fit(::Type{PolynomialCalibrationModel},c::Calibration,k)
+    X = design_polynomial(c,k)
+    y = quantity(to_quantity(c))
+    β = X\y
+    PolynomialCalibrationModel(k,β,c)
 end
 
-function calibrateData{T<:Quantity}(cals::Vector{Calibration{T}},q::T,k::Int)
-    β = calibratePolynomial(cals,k)
-    calibrateData(q,β)
+function StatsBase.predict{T,F}(m::PolynomialCalibrationModel{T,F},q::F)
+    X = design_polynomial(q,m.k)
+    T(times(q),X*m.β)
 end
-
-function calibrationDataFrame{T<:Quantity}(cal::Calibration{T})
-    Qc = quantity(to_quantity(cal))
-    Qs = quantity(interpolateCalibration(cal))
-    DataFrame(T=times(to_quantity(cal)),To=Qc,From=Qs,)
-end
-
-calibrationDataFrame{T<:Quantity}(cals::Vector{Calibration{T}}) = vcat(calibrationDataFrame.(cals)...)
 
 end # module
