@@ -26,4 +26,6 @@ function interpolatecal{T,F}(cal::Calibration{T,F})
     T(ts,qs)
 end
 
+include("polynomial.jl")
+
 end # module
