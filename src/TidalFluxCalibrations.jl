@@ -9,6 +9,8 @@ export CalibrationModel,
 
 abstract type CalibrationModel{T<:Quantity, F<:Quantity} <: RegressionModel end
 
+include("calibrations.jl")
+
 """
     interpolateCalibration(c::Calibration)
 
@@ -25,6 +27,7 @@ function interpolatecal{T,F}(cal::Calibration{T,F})
     qs = qi[ts]
     T(ts,qs)
 end
+
 
 include("polynomial.jl")
 
