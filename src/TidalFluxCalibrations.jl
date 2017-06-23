@@ -9,6 +9,11 @@ export CalibrationModel,
 
 abstract type CalibrationModel{T<:Quantity, F<:Quantity} <: RegressionModel end
 
+"""
+    PolynomialCalibrationModel{T,F}(k,β,c::Calibration{T,F})
+
+A CalibrationModel representing a polynomial regression.
+"""
 struct PolynomialCalibrationModel{T<:Quantity, F<:Quantity} <: CalibrationModel{T,F}
     k::Int
     β::Vector{Float64}
