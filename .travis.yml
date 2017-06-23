@@ -11,7 +11,6 @@ script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia -e 'Pkg.clone("https://github.com/wkearn/DischargeData.jl");'
   - julia -e 'Pkg.clone("https://github.com/wkearn/PIEMetData.jl");'
-  - julia -e 'Pkg.clone("https://github.com/wkearn/ADCPDataProcessing.jl");'
   - julia -e 'Pkg.clone("https://github.com/wkearn/TidalFluxExampleData.jl");'
   - julia -e 'Pkg.clone(pwd()); Pkg.build("TidalFluxCalibrations"); Pkg.test("TidalFluxCalibrations"; coverage=true)'
 after_success:
