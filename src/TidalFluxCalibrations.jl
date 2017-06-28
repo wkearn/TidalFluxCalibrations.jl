@@ -5,7 +5,10 @@ using Reexport
 @reexport using DischargeData, StatsBase, Interpolations
 
 export CalibrationModel,
-    PolynomialCalibrationModel
+    PolynomialCalibrationModel,
+    Calibration,
+    to_quantity,
+    from_quantity
 
 abstract type CalibrationModel{T<:Quantity, F<:Quantity} <: RegressionModel end
 
