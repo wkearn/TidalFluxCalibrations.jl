@@ -15,7 +15,7 @@ to_quantity(c::Calibration) = c.qto
 """Return the from quantity"""
 from_quantity(c::Calibration) = c.qfrom
 
-DischargeData.times(c::Calibration) = (times(to_quantity(c)),times(from_quantity(c)))
+TidalFluxQuantities.times(c::Calibration) = (times(to_quantity(c)),times(from_quantity(c)))
 
 Base.size(c::Calibration) = (length(to_quantity(c)),length(from_quantity(c)))
 
