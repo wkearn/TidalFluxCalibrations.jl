@@ -45,3 +45,8 @@ function StatsBase.predict{T,F}(m::PolynomialCalibrationModel{T,F},q::F)
     X = design_polynomial(q,m.k)
     T(times(q),X*m.β)
 end
+
+function StatsBase.predict{T,F}(m::PolynomialCalibrationModel{T,F},q)
+    X = design_polynomial(q,m.k)
+    X*m.β
+end
