@@ -1,3 +1,16 @@
+# Intervals used for dispatch in interval
+
+abstract type Interval end
+
+struct Confidence <: Interval
+    α
+end
+
+struct Prediction <: Interval
+    α
+end
+
+
 """
     PolynomialCalibrationModel{T,F}(k,β,c::Calibration{T,F})
 
@@ -10,6 +23,8 @@ struct PolynomialCalibrationModel{T<:Quantity, F<:Quantity} <: CalibrationModel{
 end
 
 StatsBase.coef(m::PolynomialCalibrationModel) = m.β
+
+StatsBase.nobs(m::PolynomialCalibrationModel) = length(to_quantity(m.c))
 
 """
     design_polynomial(Q,k)
@@ -49,4 +64,65 @@ end
 function StatsBase.predict{T,F}(m::PolynomialCalibrationModel{T,F},q)
     X = design_polynomial(q,m.k)
     X*m.β
+end
+
+"""
+Predict from a PolynomialCalibrationModel with confidence intervals
+"""
+function StatsBase.predict{T,F}(m::PolynomialCalibrationModel{T,F},q,interval::Confidence)
+    X  = design_polynomial(q,m.k)
+    p = X*m.β # Prediction
+    # Interval
+    i = confint(m,X,interval.α)
+    p, i
+end
+
+"""
+Predict from a PolynomialCalibrationModel with prediction intervals
+"""
+function StatsBase.predict{T,F}(m::PolynomialCalibrationModel{T,F},q,interval::Prediction)
+    X = design_polynomial(q,m.k)
+    p = X*m.β # Prediction
+    i = predint(m,X,interval.α)
+    p, i
+end
+
+StatsBase.residuals(m::PolynomialCalibrationModel) = quantity(to_quantity(m.c)) - predict(m,m.c)
+
+function resstderr(m::PolynomialCalibrationModel)
+    e = residuals(m)
+    n = nobs(m)
+    k = length(coef(m))
+    sqrt(e'e/(n-k))
+end    
+
+function StatsBase.vcov(m::PolynomialCalibrationModel)
+    s = resstderr(m)
+    X = design_polynomial(m.c,m.k)
+    Q = X'X
+    s*inv(Q)
+end
+
+# This is a confidence interval for the coefficients
+function StatsBase.confint(m::PolynomialCalibrationModel,α)
+    q = quantile(Normal(),1-α/2)
+    s = stderr(m)
+    m.β.+q*s,m.β+q*s
+end
+
+# This is a confidence interval for predictions on the matrix X
+function StatsBase.confint(m::PolynomialCalibrationModel,X,α)
+    q = quantile(Normal(),1-α/2)
+    V = vcov(m)
+    q*sqrt.([X[i,:]'V*X[i,:] for i in 1:size(X,1)])
+end
+
+"""
+Calculate the prediction interval width for a PolynomialCalibrationModel
+"""
+function predint(m::PolynomialCalibrationModel,X,α)
+    q = quantile(Normal(),1-α/2)
+    s2 = resstderr(m)
+    V = vcov(m)
+    q*sqrt.([X[i,:]'V*X[i,:] + s2 for i in 1:size(X,1)])
 end
