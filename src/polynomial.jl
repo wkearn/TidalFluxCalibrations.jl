@@ -1,5 +1,7 @@
 # Intervals used for dispatch in interval
 
+export Interval, Confidence, Prediction
+
 abstract type Interval end
 
 struct Confidence <: Interval
