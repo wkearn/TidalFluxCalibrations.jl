@@ -71,24 +71,20 @@ function StatsBase.predict{T,F}(m::PolynomialCalibrationModel{T,F},q)
 end
 
 """
-Predict from a PolynomialCalibrationModel with confidence intervals
+Prediction from a PolynomialCalibrationModel with an Interval
 """
-function StatsBase.predict{T,F}(m::PolynomialCalibrationModel{T,F},q,interval::Confidence)
-    X  = design_polynomial(q,m.k)
-    p = X*m.β # Prediction
-    # Interval
-    i = confint(m,X,interval.α)
+function StatsBase.predict(m::PolynomialCalibrationModel{T,F},q,interval::Interval) where {T,F}
+    X = design_polynomial(q,m.k)
+    p = X*m.β
+    i = interval(m,X)
     p, i
 end
 
-"""
-Predict from a PolynomialCalibrationModel with prediction intervals
-"""
-function StatsBase.predict{T,F}(m::PolynomialCalibrationModel{T,F},q,interval::Prediction)
+function StatsBase.predict(m::PolynomialCalibrationModel{T,F},q::F,interval::Interval) where {T,F}
     X = design_polynomial(q,m.k)
-    p = X*m.β # Prediction
-    i = predint(m,X,interval.α)
-    p, i
+    p = X*m.β
+    i = interval(m,X)
+    T(times(q),p), i
 end
 
 StatsBase.residuals(m::PolynomialCalibrationModel) = quantity(to_quantity(m.c)) - predict(m,m.c)
