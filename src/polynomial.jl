@@ -81,9 +81,7 @@ function StatsBase.predict(m::PolynomialCalibrationModel{T,F},q,interval::Interv
 end
 
 function StatsBase.predict(m::PolynomialCalibrationModel{T,F},q::F,interval::Interval) where {T,F}
-    X = design_polynomial(q,m.k)
-    p = X*m.β
-    i = interval(m,X)
+    p,i = predict(m,quantity(q),interval)
     T(times(q),p), i
 end
 
