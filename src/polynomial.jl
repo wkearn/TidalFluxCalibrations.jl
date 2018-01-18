@@ -51,6 +51,8 @@ function design_polynomial(c::Calibration,k)
     design_polynomial(qi,k)
 end
 
+design_polynomial(m::PolynomialCalibrationModel,k) = design_polynomial(m.c,k)
+
 function StatsBase.fit(::Type{PolynomialCalibrationModel},c::Calibration,k)
     X = design_polynomial(c,k)
     y = quantity(to_quantity(c))
