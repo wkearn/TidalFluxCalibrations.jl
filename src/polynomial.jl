@@ -130,3 +130,11 @@ function predint(m::PolynomialCalibrationModel,X,α)
     V = vcov(m)
     q*sqrt.([X[i,:]'V*X[i,:] + s2 for i in 1:size(X,1)])
 end
+
+function (p::Confidence)(m::PolynomialCalibrationModel,X)
+    confint(m,X,p.α)
+end
+
+function (p::Prediction)(m::PolynomialCalibrationModel,X)
+    predint(m,X,p.α)
+end
